@@ -27,9 +27,19 @@ const libraryRoutes    = require('./routes/libraryRoutes');
 const transportRoutes  = require('./routes/transportRoutes');
 const dashboardRoutes  = require('./routes/dashboardRoutes');
 
+// ── Admission module (new) ──────────────────────────────────────────────
+const admissionRoutes       = require('./routes/admissionRoutes');
+const admissionErrorHandler = require('./middleware/admissionErrorHandler');
+
+
 const app = express();
 connectDB();
-app.use(helmet());
+
+// crossOriginResourcePolicy is relaxed so images from /uploads load on the
+// frontend, which runs on a different origin (localhost:3000 / vercel.app).
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -43,7 +53,7 @@ app.use(cors({
     }
     return callback(new Error('CORS blocked:' + origin));
   },
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true,
 }));
@@ -79,6 +89,7 @@ app.use(`${API}/sms`,smsRoutes);
 app.use(`${API}/timetable`,timetableRoutes);
 app.use(`${API}/library`,libraryRoutes);
 app.use(`${API}/transport`,transportRoutes);
+app.use(`${API}/admissions`,admissionRoutes,admissionErrorHandler); // new
 
 app.use(notFound);
 app.use(errorHandler);
